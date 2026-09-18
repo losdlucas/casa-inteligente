@@ -89,6 +89,10 @@ int comandoServo = 0;
 
 bool comandoBuzzer = false;
 
+// Estados dos dispositivos controlados pelo MQTT
+bool mqttLED1 = false;
+bool mqttLED2 = false;
+
 
 // =====================================
 // CONFIGURAÇÃO DOS TÓPICOS
@@ -209,6 +213,7 @@ void mqttCallback(
 
   if (mensagem == "LED1_ON") {
 
+    mqttLED1 = true;
     digitalWrite(LED1, HIGH);
 
     mqtt.publish(
@@ -220,7 +225,7 @@ void mqttCallback(
 
   if (mensagem == "LED1_OFF") {
 
-    digitalWrite(LED1, LOW);
+    mqttLED1 = false;
 
     mqtt.publish(
       topicStatus.c_str(),
@@ -235,6 +240,7 @@ void mqttCallback(
 
   if (mensagem == "LED2_ON") {
 
+    mqttLED2 = true;
     digitalWrite(LED2, HIGH);
 
     mqtt.publish(
@@ -246,7 +252,7 @@ void mqttCallback(
 
   if (mensagem == "LED2_OFF") {
 
-    digitalWrite(LED2, LOW);
+    mqttLED2 = false;
 
     mqtt.publish(
       topicStatus.c_str(),
@@ -660,7 +666,6 @@ void loop() {
   // ===================================
 
   if (!mqtt.connected()) {
-
     conectarMQTT();
   }
 
@@ -674,7 +679,6 @@ void loop() {
   int botao1 = digitalRead(BOTAO1);
   int botao2 = digitalRead(BOTAO2);
   int botao3 = digitalRead(BOTAO3);
-
   int botao4 = digitalRead(BOTAO4);
   int botao5 = digitalRead(BOTAO5);
 
@@ -685,9 +689,9 @@ void loop() {
   // PIR
   // ===================================
 
-  if (movimento == HIGH) {
+  static bool ultimoMovimento = false;
 
-    static bool ultimoMovimento = false;
+  if (movimento == HIGH) {
 
     if (!ultimoMovimento) {
 
@@ -698,19 +702,18 @@ void loop() {
         topicPIR.c_str(),
         "MOVIMENTO_DETECTADO"
       );
+
+      ultimoMovimento = true;
     }
 
-    ultimoMovimento = true;
-
-
+    // PIR liga os dois LEDs
     digitalWrite(LED1, HIGH);
     digitalWrite(LED2, HIGH);
 
+    // PIR dispara o alarme
     alarme();
 
   } else {
-
-    static bool ultimoMovimento = false;
 
     if (ultimoMovimento) {
 
@@ -722,18 +725,14 @@ void loop() {
       ultimoMovimento = false;
     }
 
-    noTone(BUZZER);
-
 
     // =================================
-    // BOTAO 1
+    // BOTAO 1 / BUZZER
     // =================================
 
     if (botao1 == HIGH) {
 
-      Serial.println(
-        "BOTAO 1 - ALARME LIGADO"
-      );
+      Serial.println("BOTAO 1 - ALARME LIGADO");
 
       mqtt.publish(
         topicBotao1.c_str(),
@@ -745,40 +744,41 @@ void loop() {
 
 
     // =================================
-    // BOTAO 2
+    // LED 1
     // =================================
+    // O LED fica ligado se:
+    // botão 2 estiver apertado OU
+    // MQTT tiver mandado LED1_ON.
 
-    if (botao2 == HIGH) {
-
+    if (botao2 == HIGH || mqttLED1) {
       digitalWrite(LED1, HIGH);
-
-      mqtt.publish(
-        topicBotao2.c_str(),
-        "LED1_LIGADO"
-      );
-
     } else {
-
       digitalWrite(LED1, LOW);
     }
 
 
     // =================================
-    // BOTAO 3
+    // LED 2
+    // =================================
+    // O LED fica ligado se:
+    // botão 3 estiver apertado OU
+    // MQTT tiver mandado LED2_ON.
+
+    if (botao3 == HIGH || mqttLED2) {
+      digitalWrite(LED2, HIGH);
+    } else {
+      digitalWrite(LED2, LOW);
+    }
+
+
+    // =================================
+    // BUZZER PELO MQTT
     // =================================
 
-    if (botao3 == HIGH) {
-
-      digitalWrite(LED2, HIGH);
-
-      mqtt.publish(
-        topicBotao3.c_str(),
-        "LED2_LIGADO"
-      );
-
-    } else {
-
-      digitalWrite(LED2, LOW);
+    if (comandoBuzzer) {
+      tone(BUZZER, 500);
+    } else if (botao1 == LOW) {
+      noTone(BUZZER);
     }
   }
 
@@ -834,6 +834,13 @@ void loop() {
     comandoServo = 0;
 
     servoAntiHorario();
+  }
+
+
+  // Mantém o buzzer MQTT ligado mesmo depois
+  // de o restante do loop terminar.
+  if (movimento == LOW && comandoBuzzer) {
+    tone(BUZZER, 500);
   }
 
 
