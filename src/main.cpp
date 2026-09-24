@@ -303,14 +303,10 @@ void mqttCallback(
 
 void conectarMQTT()
 {
-
   while (!mqtt.connected())
   {
-
     Serial.println();
     Serial.println("CONECTANDO AO MQTT...");
-
-    // ID único do cliente
 
     String clientID = "ESP32-";
 
@@ -318,15 +314,14 @@ void conectarMQTT()
         (uint32_t)ESP.getEfuseMac(),
         HEX);
 
+    Serial.println("ANTES DO MQTT.CONNECT");
+
     if (mqtt.connect(clientID.c_str()))
     {
-
+      Serial.println("DEPOIS DO MQTT.CONNECT");
       Serial.println("MQTT CONECTADO!");
 
-      // Receber comandos
-
-      mqtt.subscribe(
-          topicComando.c_str());
+      mqtt.subscribe(topicComando.c_str());
 
       mqtt.publish(
           topicStatus.c_str(),
@@ -334,15 +329,10 @@ void conectarMQTT()
     }
     else
     {
-
       Serial.print("ERRO MQTT. Codigo: ");
+      Serial.println(mqtt.state());
 
-      Serial.println(
-          mqtt.state());
-
-      Serial.println(
-          "Tentando novamente em 3 segundos...");
-
+      Serial.println("Tentando novamente em 3 segundos...");
       delay(3000);
     }
   }
@@ -519,6 +509,8 @@ void setup()
 
   Serial.begin(115200);
 
+  Serial.println("### VERSAO NOVA DO CODIGO ###");
+
   // ===================================
   // BOTÕES
   // ===================================
@@ -601,6 +593,8 @@ void setup()
 
   mqtt.setCallback(
       mqttCallback);
+
+  mqtt.setSocketTimeout(5);
 
   conectarMQTT();
 
