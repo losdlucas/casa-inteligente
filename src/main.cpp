@@ -37,6 +37,17 @@
 
 Servo meuServo;
 
+// Controle do buzzer
+void buzzerOn()
+{
+  tone(BUZZER, 500);
+}
+
+void buzzerOff()
+{
+  noTone(BUZZER);
+}
+
 // =====================================
 // TEMPO DO SERVO
 // =====================================
@@ -48,14 +59,14 @@ Servo meuServo;
 // =====================================
 
 // Wokwi
-const char* WIFI_SSID = "Wokwi-GUEST";
-const char* WIFI_PASSWORD = "";
+const char *WIFI_SSID = "Wokwi-GUEST";
+const char *WIFI_PASSWORD = "";
 
 // =====================================
 // MQTT
 // =====================================
 
-const char* MQTT_SERVER = "broker.hivemq.com";
+const char *MQTT_SERVER = "broker.hivemq.com";
 const int MQTT_PORT = 1883;
 
 WiFiClient espClient;
@@ -93,12 +104,12 @@ bool comandoBuzzer = false;
 bool mqttLED1 = false;
 bool mqttLED2 = false;
 
-
 // =====================================
 // CONFIGURAÇÃO DOS TÓPICOS
 // =====================================
 
-void configurarTopicos() {
+void configurarTopicos()
+{
 
   // Usa o ID do ESP32 para deixar o tópico único
 
@@ -125,12 +136,12 @@ void configurarTopicos() {
   Serial.println(baseTopic);
 }
 
-
 // =====================================
 // CONECTAR WI-FI
 // =====================================
 
-void conectarWiFi() {
+void conectarWiFi()
+{
 
   Serial.println();
   Serial.println("================================");
@@ -142,7 +153,8 @@ void conectarWiFi() {
 
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 
-  while (WiFi.status() != WL_CONNECTED) {
+  while (WiFi.status() != WL_CONNECTED)
+  {
 
     delay(500);
 
@@ -157,20 +169,20 @@ void conectarWiFi() {
   Serial.println(WiFi.localIP());
 }
 
-
 // =====================================
 // CALLBACK MQTT
 // =====================================
 
 void mqttCallback(
-  char* topic,
-  byte* payload,
-  unsigned int length
-) {
+    char *topic,
+    byte *payload,
+    unsigned int length)
+{
 
   String mensagem = "";
 
-  for (unsigned int i = 0; i < length; i++) {
+  for (unsigned int i = 0; i < length; i++)
+  {
 
     mensagem += (char)payload[i];
   }
@@ -186,119 +198,114 @@ void mqttCallback(
   Serial.print("Mensagem: ");
   Serial.println(mensagem);
 
-
   // ===================================
   // COMANDOS DO SERVO
   // ===================================
 
-  if (mensagem == "SERVO_ABRIR") {
+  if (mensagem == "SERVO_ABRIR")
+  {
 
     comandoServo = 1;
 
     Serial.println("MQTT -> SERVO 0 -> 180");
   }
 
-
-  if (mensagem == "SERVO_FECHAR") {
+  if (mensagem == "SERVO_FECHAR")
+  {
 
     comandoServo = 2;
 
     Serial.println("MQTT -> SERVO 180 -> 0");
   }
 
-
   // ===================================
   // LED 1
   // ===================================
 
-  if (mensagem == "LED1_ON") {
+  if (mensagem == "LED1_ON")
+  {
 
     mqttLED1 = true;
     digitalWrite(LED1, HIGH);
 
     mqtt.publish(
-      topicStatus.c_str(),
-      "LED1_LIGADO"
-    );
+        topicStatus.c_str(),
+        "LED1_LIGADO");
   }
 
-
-  if (mensagem == "LED1_OFF") {
+  if (mensagem == "LED1_OFF")
+  {
 
     mqttLED1 = false;
 
     mqtt.publish(
-      topicStatus.c_str(),
-      "LED1_DESLIGADO"
-    );
+        topicStatus.c_str(),
+        "LED1_DESLIGADO");
   }
-
 
   // ===================================
   // LED 2
   // ===================================
 
-  if (mensagem == "LED2_ON") {
+  if (mensagem == "LED2_ON")
+  {
 
     mqttLED2 = true;
     digitalWrite(LED2, HIGH);
 
     mqtt.publish(
-      topicStatus.c_str(),
-      "LED2_LIGADO"
-    );
+        topicStatus.c_str(),
+        "LED2_LIGADO");
   }
 
-
-  if (mensagem == "LED2_OFF") {
+  if (mensagem == "LED2_OFF")
+  {
 
     mqttLED2 = false;
 
     mqtt.publish(
-      topicStatus.c_str(),
-      "LED2_DESLIGADO"
-    );
+        topicStatus.c_str(),
+        "LED2_DESLIGADO");
   }
-
 
   // ===================================
   // BUZZER
   // ===================================
 
-  if (mensagem == "BUZZER_ON") {
+  if (mensagem == "BUZZER_ON")
+  {
 
     comandoBuzzer = true;
 
-    tone(BUZZER, 500);
+    buzzerOn();
 
     mqtt.publish(
-      topicStatus.c_str(),
-      "BUZZER_LIGADO"
-    );
+        topicStatus.c_str(),
+        "BUZZER_LIGADO");
   }
 
-
-  if (mensagem == "BUZZER_OFF") {
+  if (mensagem == "BUZZER_OFF")
+  {
 
     comandoBuzzer = false;
 
-    noTone(BUZZER);
+    buzzerOff();
 
     mqtt.publish(
-      topicStatus.c_str(),
-      "BUZZER_DESLIGADO"
-    );
+        topicStatus.c_str(),
+        "BUZZER_DESLIGADO");
   }
 }
-
 
 // =====================================
 // CONECTAR MQTT
 // =====================================
 
-void conectarMQTT() {
+void conectarMQTT()
+{
 
-  while (!mqtt.connected()) {
+  while (!mqtt.connected())
+  {
 
     Serial.println();
     Serial.println("CONECTANDO AO MQTT...");
@@ -308,100 +315,95 @@ void conectarMQTT() {
     String clientID = "ESP32-";
 
     clientID += String(
-      (uint32_t)ESP.getEfuseMac(),
-      HEX
-    );
+        (uint32_t)ESP.getEfuseMac(),
+        HEX);
 
-    if (mqtt.connect(clientID.c_str())) {
+    if (mqtt.connect(clientID.c_str()))
+    {
 
       Serial.println("MQTT CONECTADO!");
 
       // Receber comandos
 
       mqtt.subscribe(
-        topicComando.c_str()
-      );
+          topicComando.c_str());
 
       mqtt.publish(
-        topicStatus.c_str(),
-        "ESP32_ONLINE"
-      );
-
-    } else {
+          topicStatus.c_str(),
+          "ESP32_ONLINE");
+    }
+    else
+    {
 
       Serial.print("ERRO MQTT. Codigo: ");
 
       Serial.println(
-        mqtt.state()
-      );
+          mqtt.state());
 
       Serial.println(
-        "Tentando novamente em 3 segundos..."
-      );
+          "Tentando novamente em 3 segundos...");
 
       delay(3000);
     }
   }
 }
 
-
 // =====================================
 // ALARME
 // =====================================
 
-void alarme() {
+void alarme()
+{
 
-  for (int i = 0; i < 4; i++) {
+  for (int i = 0; i < 4; i++)
+  {
 
-    tone(BUZZER, 500);
+    buzzerOn();
 
     mqtt.loop();
 
     delay(120);
 
-    noTone(BUZZER);
+    buzzerOff();
 
     mqtt.loop();
 
     delay(70);
 
     if (
-      digitalRead(BOTAO1) == LOW &&
-      digitalRead(PIR) == LOW
-    ) {
+        digitalRead(BOTAO1) == LOW &&
+        digitalRead(PIR) == LOW)
+    {
 
-      noTone(BUZZER);
+      buzzerOff();
 
       return;
     }
   }
 
-  noTone(BUZZER);
+  buzzerOff();
 
   delay(180);
 }
-
 
 // =====================================
 // SERVO 0 -> 180
 // =====================================
 
-void servoHorario() {
+void servoHorario()
+{
 
   Serial.println();
   Serial.println("BOTAO 4");
   Serial.println("SERVO 0 -> 180 GRAUS");
 
   mqtt.publish(
-    topicBotao4.c_str(),
-    "PRESSIONADO"
-  );
+      topicBotao4.c_str(),
+      "PRESSIONADO");
 
   mqtt.publish(
-    topicServo.c_str(),
-    "MOVENDO_0_180"
-  );
-
+      topicServo.c_str(),
+      "MOVENDO_0_180");
 
   // Garante que começa em 0
 
@@ -409,10 +411,10 @@ void servoHorario() {
 
   delay(300);
 
-
   // Vai de 0 até 180
 
-  for (int pos = 0; pos <= 180; pos += 2) {
+  for (int pos = 0; pos <= 180; pos += 2)
+  {
 
     meuServo.write(pos);
 
@@ -421,56 +423,49 @@ void servoHorario() {
     delay(20);
   }
 
-
   Serial.println("SERVO EM 180 GRAUS");
 
   mqtt.publish(
-    topicServo.c_str(),
-    "180_GRAUS"
-  );
-
+      topicServo.c_str(),
+      "180_GRAUS");
 
   // Fica 6 segundos em 180
 
   unsigned long inicio = millis();
 
-  while (millis() - inicio < TEMPO_SERVO) {
+  while (millis() - inicio < TEMPO_SERVO)
+  {
 
     mqtt.loop();
 
     delay(20);
   }
 
-
   Serial.println("SERVO PARADO");
 
   mqtt.publish(
-    topicServo.c_str(),
-    "PARADO_180"
-  );
+      topicServo.c_str(),
+      "PARADO_180");
 }
-
 
 // =====================================
 // SERVO 180 -> 0
 // =====================================
 
-void servoAntiHorario() {
+void servoAntiHorario()
+{
 
   Serial.println();
   Serial.println("BOTAO 5");
   Serial.println("SERVO 180 -> 0 GRAUS");
 
   mqtt.publish(
-    topicBotao5.c_str(),
-    "PRESSIONADO"
-  );
+      topicBotao5.c_str(),
+      "PRESSIONADO");
 
   mqtt.publish(
-    topicServo.c_str(),
-    "MOVENDO_180_0"
-  );
-
+      topicServo.c_str(),
+      "MOVENDO_180_0");
 
   // Garante que começa em 180
 
@@ -478,10 +473,10 @@ void servoAntiHorario() {
 
   delay(300);
 
-
   // Vai de 180 até 0
 
-  for (int pos = 180; pos >= 0; pos -= 2) {
+  for (int pos = 180; pos >= 0; pos -= 2)
+  {
 
     meuServo.write(pos);
 
@@ -490,74 +485,63 @@ void servoAntiHorario() {
     delay(20);
   }
 
-
   Serial.println("SERVO EM 0 GRAUS");
 
   mqtt.publish(
-    topicServo.c_str(),
-    "0_GRAUS"
-  );
-
+      topicServo.c_str(),
+      "0_GRAUS");
 
   // Fica 6 segundos em 0
 
   unsigned long inicio = millis();
 
-  while (millis() - inicio < TEMPO_SERVO) {
+  while (millis() - inicio < TEMPO_SERVO)
+  {
 
     mqtt.loop();
 
     delay(20);
   }
 
-
   Serial.println("SERVO PARADO");
 
   mqtt.publish(
-    topicServo.c_str(),
-    "PARADO_0"
-  );
+      topicServo.c_str(),
+      "PARADO_0");
 }
-
 
 // =====================================
 // SETUP
 // =====================================
 
-void setup() {
+void setup()
+{
 
   Serial.begin(115200);
-
 
   // ===================================
   // BOTÕES
   // ===================================
 
   pinMode(
-    BOTAO1,
-    INPUT_PULLDOWN
-  );
+      BOTAO1,
+      INPUT_PULLDOWN);
 
   pinMode(
-    BOTAO2,
-    INPUT_PULLDOWN
-  );
+      BOTAO2,
+      INPUT_PULLDOWN);
 
   pinMode(
-    BOTAO3,
-    INPUT_PULLDOWN
-  );
+      BOTAO3,
+      INPUT_PULLDOWN);
 
   pinMode(
-    BOTAO4,
-    INPUT_PULLDOWN
-  );
+      BOTAO4,
+      INPUT_PULLDOWN);
 
   pinMode(
-    BOTAO5,
-    INPUT_PULLDOWN
-  );
-
+      BOTAO5,
+      INPUT_PULLDOWN);
 
   // ===================================
   // LEDS
@@ -569,15 +553,12 @@ void setup() {
   digitalWrite(LED1, LOW);
   digitalWrite(LED2, LOW);
 
-
   // ===================================
   // BUZZER
   // ===================================
 
   pinMode(BUZZER, OUTPUT);
-
   noTone(BUZZER);
-
 
   // ===================================
   // PIR
@@ -585,23 +566,18 @@ void setup() {
 
   pinMode(PIR, INPUT);
 
-
   // ===================================
   // SERVO
   // ===================================
 
   meuServo.setPeriodHertz(50);
+  meuServo.attach(SERVO_PIN, 500, 2400);
 
-  meuServo.attach(
-    SERVO_PIN,
-    500,
-    2400
-  );
+  Serial.println("SERVO CONECTADO NO GPIO 32");
 
   // Começa em 0 graus
-
   meuServo.write(0);
-
+  delay(500);
 
   // ===================================
   // TÓPICOS
@@ -609,30 +585,24 @@ void setup() {
 
   configurarTopicos();
 
-
   // ===================================
   // WI-FI
   // ===================================
 
   conectarWiFi();
 
-
   // ===================================
   // MQTT
   // ===================================
 
   mqtt.setServer(
-    MQTT_SERVER,
-    MQTT_PORT
-  );
+      MQTT_SERVER,
+      MQTT_PORT);
 
   mqtt.setCallback(
-    mqttCallback
-  );
-
+      mqttCallback);
 
   conectarMQTT();
-
 
   // ===================================
   // MENSAGENS
@@ -654,23 +624,23 @@ void setup() {
   Serial.println("MQTT PRONTO!");
 }
 
-
 // =====================================
 // LOOP
 // =====================================
 
-void loop() {
+void loop()
+{
 
   // ===================================
   // GARANTIR MQTT
   // ===================================
 
-  if (!mqtt.connected()) {
+  if (!mqtt.connected())
+  {
     conectarMQTT();
   }
 
   mqtt.loop();
-
 
   // ===================================
   // LER BOTÕES
@@ -684,24 +654,24 @@ void loop() {
 
   int movimento = digitalRead(PIR);
 
-
   // ===================================
   // PIR
   // ===================================
 
   static bool ultimoMovimento = false;
 
-  if (movimento == HIGH) {
+  if (movimento == HIGH)
+  {
 
-    if (!ultimoMovimento) {
+    if (!ultimoMovimento)
+    {
 
       Serial.println();
       Serial.println("MOVIMENTO DETECTADO!");
 
       mqtt.publish(
-        topicPIR.c_str(),
-        "MOVIMENTO_DETECTADO"
-      );
+          topicPIR.c_str(),
+          "MOVIMENTO_DETECTADO");
 
       ultimoMovimento = true;
     }
@@ -712,36 +682,35 @@ void loop() {
 
     // PIR dispara o alarme
     alarme();
+  }
+  else
+  {
 
-  } else {
-
-    if (ultimoMovimento) {
+    if (ultimoMovimento)
+    {
 
       mqtt.publish(
-        topicPIR.c_str(),
-        "SEM_MOVIMENTO"
-      );
+          topicPIR.c_str(),
+          "SEM_MOVIMENTO");
 
       ultimoMovimento = false;
     }
-
 
     // =================================
     // BOTAO 1 / BUZZER
     // =================================
 
-    if (botao1 == HIGH) {
+    if (botao1 == HIGH)
+    {
 
       Serial.println("BOTAO 1 - ALARME LIGADO");
 
       mqtt.publish(
-        topicBotao1.c_str(),
-        "PRESSIONADO"
-      );
+          topicBotao1.c_str(),
+          "PRESSIONADO");
 
       alarme();
     }
-
 
     // =================================
     // LED 1
@@ -750,12 +719,14 @@ void loop() {
     // botão 2 estiver apertado OU
     // MQTT tiver mandado LED1_ON.
 
-    if (botao2 == HIGH || mqttLED1) {
+    if (botao2 == HIGH || mqttLED1)
+    {
       digitalWrite(LED1, HIGH);
-    } else {
+    }
+    else
+    {
       digitalWrite(LED1, LOW);
     }
-
 
     // =================================
     // LED 2
@@ -764,24 +735,28 @@ void loop() {
     // botão 3 estiver apertado OU
     // MQTT tiver mandado LED2_ON.
 
-    if (botao3 == HIGH || mqttLED2) {
+    if (botao3 == HIGH || mqttLED2)
+    {
       digitalWrite(LED2, HIGH);
-    } else {
+    }
+    else
+    {
       digitalWrite(LED2, LOW);
     }
-
 
     // =================================
     // BUZZER PELO MQTT
     // =================================
 
-    if (comandoBuzzer) {
-      tone(BUZZER, 500);
-    } else if (botao1 == LOW) {
-      noTone(BUZZER);
+    if (comandoBuzzer)
+    {
+      buzzerOn();
+    }
+    else if (botao1 == LOW)
+    {
+      buzzerOff();
     }
   }
-
 
   // ===================================
   // BOTAO 4
@@ -790,15 +765,14 @@ void loop() {
   static bool ultimoBotao4 = false;
 
   if (
-    botao4 == HIGH &&
-    ultimoBotao4 == false
-  ) {
+      botao4 == HIGH &&
+      ultimoBotao4 == false)
+  {
 
     servoHorario();
   }
 
   ultimoBotao4 = botao4;
-
 
   // ===================================
   // BOTAO 5
@@ -807,42 +781,43 @@ void loop() {
   static bool ultimoBotao5 = false;
 
   if (
-    botao5 == HIGH &&
-    ultimoBotao5 == false
-  ) {
+      botao5 == HIGH &&
+      ultimoBotao5 == false)
+  {
 
     servoAntiHorario();
   }
 
   ultimoBotao5 = botao5;
 
-
   // ===================================
   // COMANDO MQTT DO SERVO
   // ===================================
 
-  if (comandoServo == 1) {
+  if (comandoServo == 1)
+  {
 
+    Serial.println("EXECUTANDO COMANDO MQTT: SERVO_ABRIR");
     comandoServo = 0;
 
     servoHorario();
   }
 
+  if (comandoServo == 2)
+  {
 
-  if (comandoServo == 2) {
-
+    Serial.println("EXECUTANDO COMANDO MQTT: SERVO_FECHAR");
     comandoServo = 0;
 
     servoAntiHorario();
   }
 
-
   // Mantém o buzzer MQTT ligado mesmo depois
   // de o restante do loop terminar.
-  if (movimento == LOW && comandoBuzzer) {
-    tone(BUZZER, 500);
+  if (movimento == LOW && comandoBuzzer)
+  {
+    buzzerOn();
   }
-
 
   delay(10);
 }
