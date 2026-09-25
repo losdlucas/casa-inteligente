@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Smart Home</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+    <div class="background-glow glow-1"></div>
+    <div class="background-glow glow-2"></div>
+
+    <header class="topbar">
+
+        <div class="logo-area">
+            <div class="logo">SH</div>
+
+            <div>
+                <h1>Smart Home</h1>
+                <span>Casa Inteligente</span>
+            </div>
+        </div>
+
+        <div class="system-status">
+            <span class="status-dot"></span>
+            Sistema Online
+        </div>
+
+    </header>
+
+
+    <main class="container">
+
+        <!-- CABEÇALHO -->
+        <section class="welcome">
+
+            <div>
+                <p class="small-title">PAINEL DE CONTROLE</p>
+
+                <h2>
+                    Controle sua casa
+                    <span>de qualquer lugar.</span>
+                </h2>
+
+                <p class="description">
+                    Gerencie a iluminação e o sistema de segurança
+                    da sua casa inteligente.
+                </p>
+            </div>
+
+            <div class="house-icon">
+                🏠
+            </div>
+
+        </section>
+
+
+        <!-- ILUMINAÇÃO -->
+        <section class="section">
+
+            <div class="section-title">
+
+                <div>
+                    <span class="section-icon">💡</span>
+
+                    <div>
+                        <h3>Iluminação</h3>
+                        <p>Controle os ambientes da casa</p>
+                    </div>
+                </div>
+
+                <span id="lightsCounter">0 ligadas</span>
+
+            </div>
+
+
+            <div class="lights-grid">
+
+
+                <!-- SALA -->
+                <div class="light-card" data-room="sala">
+
+                    <div class="card-top">
+
+                        <div class="room-icon">
+                            🛋️
+                        </div>
+
+                        <div class="light-status off">
+                            OFF
+                        </div>
+
+                    </div>
+
+                    <h4>Sala</h4>
+
+                    <p>Iluminação principal</p>
+
+                    <button
+                        class="light-button"
+                        onclick="toggleLight('sala')">
+
+                        <span class="button-icon">💡</span>
+
+                        <span class="button-text">
+                            Ligar luz
+                        </span>
+
+                    </button>
+
+                </div>
+
+
+                <!-- COZINHA -->
+                <div class="light-card" data-room="cozinha">
+
+                    <div class="card-top">
+
+                        <div class="room-icon">
+                            🍳
+                        </div>
+
+                        <div class="light-status off">
+                            OFF
+                        </div>
+
+                    </div>
+
+                    <h4>Cozinha</h4>
+
+                    <p>Iluminação da cozinha</p>
+
+                    <button
+                        class="light-button"
+                        onclick="toggleLight('cozinha')">
+
+                        <span class="button-icon">💡</span>
+
+                        <span class="button-text">
+                            Ligar luz
+                        </span>
+
+                    </button>
+
+                </div>
+
+
+                <!-- QUARTO -->
+                <div class="light-card" data-room="quarto">
+
+                    <div class="card-top">
+
+                        <div class="room-icon">
+                            🛏️
+                        </div>
+
+                        <div class="light-status off">
+                            OFF
+                        </div>
+
+                    </div>
+
+                    <h4>Quarto</h4>
+
+                    <p>Iluminação do quarto</p>
+
+                    <button
+                        class="light-button"
+                        onclick="toggleLight('quarto')">
+
+                        <span class="button-icon">💡</span>
+
+                        <span class="button-text">
+                            Ligar luz
+                        </span>
+
+                    </button>
+
+                </div>
+
+
+                <!-- BANHEIRO -->
+                <div class="light-card" data-room="banheiro">
+
+                    <div class="card-top">
+
+                        <div class="room-icon">
+                            🚿
+                        </div>
+
+                        <div class="light-status off">
+                            OFF
+                        </div>
+
+                    </div>
+
+                    <h4>Banheiro</h4>
+
+                    <p>Iluminação do banheiro</p>
+
+                    <button
+                        class="light-button"
+                        onclick="toggleLight('banheiro')">
+
+                        <span class="button-icon">💡</span>
+
+                        <span class="button-text">
+                            Ligar luz
+                        </span>
+
+                    </button>
+
+                </div>
+
+
+                <!-- ÁREA EXTERNA -->
+                <div class="light-card external" data-room="externa">
+
+                    <div class="card-top">
+
+                        <div class="room-icon">
+                            🌳
+                        </div>
+
+                        <div class="light-status off">
+                            OFF
+                        </div>
+
+                    </div>
+
+                    <h4>Área externa</h4>
+
+                    <p>Iluminação externa</p>
+
+                    <button
+                        class="light-button"
+                        onclick="toggleLight('externa')">
+
+                        <span class="button-icon">💡</span>
+
+                        <span class="button-text">
+                            Ligar luz
+                        </span>
+
+                    </button>
+
+                </div>
+
+
+            </div>
+
+        </section>
+
+
+        <!-- SEGURANÇA -->
+        <section class="security-section">
+
+            <div class="section-title">
+
+                <div>
+                    <span class="section-icon">🛡️</span>
+
+                    <div>
+                        <h3>Segurança</h3>
+                        <p>Proteção e monitoramento da residência</p>
+                    </div>
+                </div>
+
+            </div>
+
+
+            <div class="security-grid">
+
+
+                <!-- ALARME -->
+                <div class="alarm-card">
+
+                    <div class="alarm-header">
+
+                        <div class="alarm-icon">
+                            🚨
+                        </div>
+
+                        <div>
+
+                            <h4>Sistema de Alarme</h4>
+
+                            <span id="alarmStatus">
+                                Desativado
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="alarm-info">
+
+                        <div class="security-status">
+
+                            <span
+                                id="alarmDot"
+                                class="security-dot">
+                            </span>
+
+                            <span id="alarmText">
+                                Sistema desativado
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- BOTÃO SEGURAR -->
+                    <button
+                        id="alarmButton"
+                        class="alarm-button">
+
+                        <span class="alarm-button-icon">
+                            🔒
+                        </span>
+
+                        <span>
+                            SEGURE PARA ATIVAR
+                        </span>
+
+                    </button>
+
+
+                    <div class="hold-progress">
+
+                        <div id="progressBar"></div>
+
+                    </div>
+
+
+                    <p class="hold-message">
+                        Segure o botão por 2 segundos para ativar
+                    </p>
+
+                </div>
+
+
+                <!-- MOVIMENTO -->
+                <div class="motion-card">
+
+                    <div class="motion-icon">
+                        👤
+                    </div>
+
+                    <div>
+
+                        <span class="motion-label">
+                            SENSOR DE MOVIMENTO
+                        </span>
+
+                        <h4 id="motionStatus">
+                            Nenhum movimento
+                        </h4>
+
+                        <p id="motionDescription">
+                            Área externa monitorada
+                        </p>
+
+                    </div>
+
+                    <div
+                        id="motionIndicator"
+                        class="motion-indicator">
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- EVENTOS -->
+        <section class="events-section">
+
+            <div class="section-title">
+
+                <div>
+                    <span class="section-icon">📋</span>
+
+                    <div>
+                        <h3>Últimos eventos</h3>
+                        <p>Atividades recentes do sistema</p>
+                    </div>
+                </div>
+
+            </div>
+
+
+            <div id="eventsList" class="events-list">
+
+                <div class="empty-events">
+
+                    <span>✓</span>
+
+                    <p>
+                        Nenhum evento recente
+                    </p>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <footer>
+
+        <p>
+            Smart Home • Projeto IoT com ESP32
+        </p>
+
+        <span>
+            Sistema de automação residencial
+        </span>
+
+    </footer>
+
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+
+</body>
+
+</html>

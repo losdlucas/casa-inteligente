@@ -1,0 +1,17 @@
+# Ambiente Python
+.env
+.venv/
+venv/
+
+# Python temporário
+__pycache__/
+*.py[cod]
+
+# VS Code
+.vscode/
+
+# PyCharm
+.idea/
+
+# PlatformIO
+.pio/
