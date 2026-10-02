@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Casa Inteligente</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+    <div class="background"></div>
+
+    <header class="topbar">
+
+        <div class="logo">
+            <div class="logo-icon">⌂</div>
+
+            <div>
+                <h1>Casa<span>Smart</span></h1>
+                <p>Central IoT</p>
+            </div>
+        </div>
+
+        <div class="connection">
+            <span class="connection-dot"></span>
+            <span id="connectionText">Sistema online</span>
+        </div>
+
+    </header>
+
+
+    <main class="container">
+
+        <section class="hero">
+
+            <div>
+                <span class="tag">ESP32 • MQTT • NEON</span>
+
+                <h2>
+                    Painel da<br>
+                    <strong>Casa Inteligente</strong>
+                </h2>
+
+                <p>
+                    Monitoramento em tempo real dos dispositivos
+                    conectados ao seu ESP32.
+                </p>
+            </div>
+
+            <div class="hero-status">
+
+                <div class="status-circle">
+                    <span>●</span>
+                </div>
+
+                <div>
+                    <small>STATUS</small>
+                    <strong>Monitorando</strong>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <section class="section-header">
+
+            <div>
+                <span class="section-label">DISPOSITIVOS</span>
+                <h3>Monitoramento</h3>
+            </div>
+
+            <div class="last-update">
+                Última atualização:
+                <strong id="lastUpdate">--:--:--</strong>
+            </div>
+
+        </section>
+
+
+        <section class="devices-grid">
+
+
+
+            <!-- BOTÃO 2 -->
+            <article class="device-card" id="card-botao2">
+
+                <div class="device-top">
+
+                    <div class="device-icon button-icon">
+                        <span>02</span>
+                    </div>
+
+                    <div class="device-info">
+                        <span class="device-type">ENTRADA</span>
+                        <h4>led 1</h4>
+                    </div>
+
+                    <span class="device-indicator"></span>
+
+                </div>
+
+                <div class="device-value">
+
+                    <span class="value-label">ÚLTIMO VALOR</span>
+
+                    <strong id="valor-botao2">
+                        Aguardando...
+                    </strong>
+
+                </div>
+
+                <div class="device-time" id="hora-botao2">
+                    Sem informação
+                </div>
+
+            </article>
+
+
+            <!-- BOTÃO 3 -->
+            <article class="device-card" id="card-botao3">
+
+                <div class="device-top">
+
+                    <div class="device-icon button-icon">
+                        <span>03</span>
+                    </div>
+
+                    <div class="device-info">
+                        <span class="device-type">ENTRADA</span>
+                        <h4>led 2</h4>
+                    </div>
+
+                    <span class="device-indicator"></span>
+
+                </div>
+
+                <div class="device-value">
+
+                    <span class="value-label">ÚLTIMO VALOR</span>
+
+                    <strong id="valor-botao3">
+                        Aguardando...
+                    </strong>
+
+                </div>
+
+                <div class="device-time" id="hora-botao3">
+                    Sem informação
+                </div>
+
+            </article>
+
+
+            
+
+            <!-- PIR -->
+            <article class="device-card sensor-card" id="card-pir">
+
+                <div class="device-top">
+
+                    <div class="device-icon pir-icon">
+                        ◉
+                    </div>
+
+                    <div class="device-info">
+                        <span class="device-type">SENSOR</span>
+                        <h4>PIR</h4>
+                    </div>
+
+                    <span class="device-indicator"></span>
+
+                </div>
+
+                <div class="device-value">
+
+                    <span class="value-label">MOVIMENTO</span>
+
+                    <strong id="valor-pir">
+                        Aguardando...
+                    </strong>
+
+                </div>
+
+                <div class="device-time" id="hora-pir">
+                    Sem informação
+                </div>
+
+            </article>
+
+
+            <!-- SERVO -->
+            <article class="device-card servo-card" id="card-servo">
+
+                <div class="device-top">
+
+                    <div class="device-icon servo-icon">
+                        ↻
+                    </div>
+
+                    <div class="device-info">
+                        <span class="device-type">ATUADOR</span>
+                        <h4>Servo Motor</h4>
+                    </div>
+
+                    <span class="device-indicator"></span>
+
+                </div>
+
+                <div class="device-value">
+
+                    <span class="value-label">POSIÇÃO</span>
+
+                    <strong id="valor-servo">
+                        Aguardando...
+                    </strong>
+
+                </div>
+
+                <div class="device-time" id="hora-servo">
+                    Sem informação
+                </div>
+
+            </article>
+
+        </section>
+
+
+        <!-- INFORMAÇÕES DO SISTEMA -->
+
+        <section class="system-panel">
+
+            <div class="system-title">
+
+                <div class="system-icon">
+                    ⚡
+                </div>
+
+                <div>
+                    <span class="section-label">INFRAESTRUTURA</span>
+                    <h3>Sistema</h3>
+                </div>
+
+            </div>
+
+
+            <div class="system-items">
+
+                <div class="system-item">
+
+                    <span class="system-dot online"></span>
+
+                    <div>
+                        <small>ESP32</small>
+                        <strong>Conectado</strong>
+                    </div>
+
+                </div>
+
+
+                <div class="system-item">
+
+                    <span class="system-dot online"></span>
+
+                    <div>
+                        <small>MQTT</small>
+                        <strong>HiveMQ</strong>
+                    </div>
+
+                </div>
+
+
+                <div class="system-item">
+
+                    <span class="system-dot online"></span>
+
+                    <div>
+                        <small>DATABASE</small>
+                        <strong>Neon PostgreSQL</strong>
+                    </div>
+
+                </div>
+
+
+                <div class="system-item">
+
+                    <span class="system-dot online"></span>
+
+                    <div>
+                        <small>API</small>
+                        <strong>Flask</strong>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <footer>
+
+            <span>CASA INTELIGENTE</span>
+
+            <span class="footer-separator">•</span>
+
+            <span>ESP32 + MQTT + FLASK + NEON</span>
+
+        </footer>
+
+    </main>
+
+
+    <script>
+
+        const dispositivos = [
+            "botao1",
+            "botao2",
+            "botao3",
+            "botao4",
+            "botao5",
+            "pir",
+            "servo",
+            "rele1",
+            "rele2",
+            "rele3",
+            "rele4"
+        ];
+
+
+        function formatarValor(valor, dispositivo) {
+
+            if (valor === null || valor === undefined) {
+                return "Aguardando...";
+            }
+
+            const texto = String(valor).toLowerCase();
+
+            if (dispositivo === "pir") {
+
+                if (
+                    texto === "1" ||
+                    texto === "true" ||
+                    texto === "movimento" ||
+                    texto === "detectado"
+                ) {
+                    return "Movimento detectado";
+                }
+
+                if (
+                    texto === "0" ||
+                    texto === "false" ||
+                    texto === "sem movimento"
+                ) {
+                    return "Sem movimento";
+                }
+            }
+
+
+            if (dispositivo.startsWith("botao")) {
+
+                if (
+                    texto === "1" ||
+                    texto === "true" ||
+                    texto === "pressionado"
+                ) {
+                    return "Pressionado";
+                }
+
+                if (
+                    texto === "0" ||
+                    texto === "false" ||
+                    texto === "solto"
+                ) {
+                    return "Solto";
+                }
+            }
+
+
+            if (dispositivo === "servo") {
+
+                if (!isNaN(valor)) {
+                    return `${valor}°`;
+                }
+            }
+
+
+            return valor;
+        }
+
+
+        function formatarHora(data) {
+
+            if (!data) {
+                return "Sem informação";
+            }
+
+            const dataObj = new Date(data);
+
+            if (isNaN(dataObj)) {
+                return data;
+            }
+
+            return dataObj.toLocaleString(
+                "pt-BR",
+                {
+                    day: "2-digit",
+                    month: "2-digit",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    second: "2-digit"
+                }
+            );
+        }
+
+
+        function atualizarDispositivo(
+            dispositivo,
+            informacao
+        ) {
+
+            const valorElemento =
+                document.getElementById(
+                    `valor-${dispositivo}`
+                );
+
+            const horaElemento =
+                document.getElementById(
+                    `hora-${dispositivo}`
+                );
+
+            const card =
+                document.getElementById(
+                    `card-${dispositivo}`
+                );
+
+
+            if (!valorElemento || !horaElemento) {
+                return;
+            }
+
+
+            if (!informacao) {
+
+                valorElemento.textContent =
+                    "Aguardando...";
+
+                horaElemento.textContent =
+                    "Sem informação";
+
+                return;
+            }
+
+
+            valorElemento.textContent =
+                formatarValor(
+                    informacao.valor,
+                    dispositivo
+                );
+
+
+            horaElemento.textContent =
+                formatarHora(
+                    informacao.data_hora
+                );
+
+
+            if (card) {
+
+                card.classList.add("updated");
+
+                setTimeout(() => {
+                    card.classList.remove("updated");
+                }, 700);
+
+            }
+        }
+
+
+        async function carregarDados() {
+            try {
+                const resposta = await fetch("/api/dispositivos");
+
+                if (!resposta.ok) {
+                    throw new Error("Erro na API");
+                }
+
+                const dados = await resposta.json();
+
+                dispositivos.forEach(dispositivo => {
+                    atualizarDispositivo(dispositivo, dados[dispositivo]);
+                });
+
+                const agora = new Date();
+
+                document.getElementById("lastUpdate").textContent =
+                    agora.toLocaleTimeString("pt-BR");
+
+                document.getElementById("connectionText").textContent =
+                    "Sistema online";
+
+            } catch (erro) {
+                console.error("Erro ao buscar dados:", erro);
+
+                document.getElementById("connectionText").textContent =
+                    "Erro de conexão";
+            }
+        }
+
+        carregarDados();
+        setInterval(carregarDados, 2000);
+
+        // Primeira consulta
+        carregarDados();
+
+
+        // Atualiza a cada 2 segundos
+        setInterval(
+            carregarDados,
+            2000
+        );
+
+    </script>
+
+</body>
+
+</html>
