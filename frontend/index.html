@@ -26,8 +26,8 @@
         </div>
 
         <div class="connection">
-            <span class="connection-dot"></span>
-            <span id="connectionText">Sistema online</span>
+            <span class="connection-dot unknown" id="connectionDot"></span>
+            <span id="connectionText">Verificando conexão</span>
         </div>
 
     </header>
@@ -35,6 +35,7 @@
 
     <main class="container">
 
+        <!-- HERO -->
         <section class="hero">
 
             <div>
@@ -46,12 +47,12 @@
                 </h2>
 
                 <p>
-                    Monitoramento em tempo real dos dispositivos
+                    Controle e monitoramento em tempo real dos dispositivos
                     conectados ao seu ESP32.
                 </p>
             </div>
 
-            <div class="hero-status">
+            <div class="hero-status" id="heroStatus" data-state="unknown">
 
                 <div class="status-circle">
                     <span>●</span>
@@ -59,7 +60,7 @@
 
                 <div>
                     <small>STATUS</small>
-                    <strong>Monitorando</strong>
+                    <strong id="heroStatusText">Aguardando ESP32</strong>
                 </div>
 
             </div>
@@ -67,6 +68,7 @@
         </section>
 
 
+        <!-- MONITORAMENTO -->
         <section class="section-header">
 
             <div>
@@ -84,161 +86,332 @@
 
         <section class="devices-grid">
 
-
-
-            <!-- BOTÃO 2 -->
-            <article class="device-card" id="card-botao2">
-
+            <!-- LED AMARELO -->
+            <article class="device-card" id="card-led1">
                 <div class="device-top">
-
-                    <div class="device-icon button-icon">
-                        <span>02</span>
-                    </div>
-
+                    <div class="device-icon button-icon"><span>L1</span></div>
                     <div class="device-info">
-                        <span class="device-type">ENTRADA</span>
-                        <h4>led 1</h4>
+                        <span class="device-type">ILUMINAÇÃO</span>
+                        <h4>LED amarelo</h4>
                     </div>
-
                     <span class="device-indicator"></span>
-
                 </div>
-
                 <div class="device-value">
-
-                    <span class="value-label">ÚLTIMO VALOR</span>
-
-                    <strong id="valor-botao2">
-                        Aguardando...
-                    </strong>
-
+                    <span class="value-label">ESTADO</span>
+                    <strong id="valor-led1">Aguardando...</strong>
                 </div>
-
-                <div class="device-time" id="hora-botao2">
-                    Sem informação
-                </div>
-
+                <div class="device-time" id="hora-led1">Sem informação</div>
             </article>
 
-
-            <!-- BOTÃO 3 -->
-            <article class="device-card" id="card-botao3">
-
+            <!-- LED VERMELHO -->
+            <article class="device-card" id="card-led2">
                 <div class="device-top">
-
-                    <div class="device-icon button-icon">
-                        <span>03</span>
-                    </div>
-
+                    <div class="device-icon button-icon"><span>L2</span></div>
                     <div class="device-info">
-                        <span class="device-type">ENTRADA</span>
-                        <h4>led 2</h4>
+                        <span class="device-type">ILUMINAÇÃO</span>
+                        <h4>LED vermelho</h4>
                     </div>
-
                     <span class="device-indicator"></span>
-
                 </div>
-
                 <div class="device-value">
-
-                    <span class="value-label">ÚLTIMO VALOR</span>
-
-                    <strong id="valor-botao3">
-                        Aguardando...
-                    </strong>
-
+                    <span class="value-label">ESTADO</span>
+                    <strong id="valor-led2">Aguardando...</strong>
                 </div>
-
-                <div class="device-time" id="hora-botao3">
-                    Sem informação
-                </div>
-
+                <div class="device-time" id="hora-led2">Sem informação</div>
             </article>
 
+            <!-- BUZZER -->
+            <article class="device-card" id="card-buzzer">
+                <div class="device-top">
+                    <div class="device-icon alarm-icon icon-emoji">🔔</div>
+                    <div class="device-info">
+                        <span class="device-type">ALERTA SONORO</span>
+                        <h4>Buzzer</h4>
+                    </div>
+                    <span class="device-indicator"></span>
+                </div>
+                <div class="device-value">
+                    <span class="value-label">ESTADO</span>
+                    <strong id="valor-buzzer">Aguardando...</strong>
+                </div>
+                <div class="device-time" id="hora-buzzer">Sem informação</div>
+            </article>
 
-            
+            <!-- ALARME -->
+            <article class="device-card" id="card-alarme">
+                <div class="device-top">
+                    <div class="device-icon alarm-icon icon-emoji">⌁</div>
+                    <div class="device-info">
+                        <span class="device-type">SEGURANÇA</span>
+                        <h4>Alarme</h4>
+                    </div>
+                    <span class="device-indicator"></span>
+                </div>
+                <div class="device-value">
+                    <span class="value-label">ESTADO</span>
+                    <strong id="valor-alarme">Aguardando...</strong>
+                </div>
+                <div class="device-time" id="hora-alarme">Sem informação</div>
+            </article>
 
             <!-- PIR -->
             <article class="device-card sensor-card" id="card-pir">
-
                 <div class="device-top">
-
-                    <div class="device-icon pir-icon">
-                        ◉
-                    </div>
-
+                    <div class="device-icon pir-icon">◉</div>
                     <div class="device-info">
                         <span class="device-type">SENSOR</span>
                         <h4>PIR</h4>
                     </div>
-
                     <span class="device-indicator"></span>
-
                 </div>
-
                 <div class="device-value">
-
                     <span class="value-label">MOVIMENTO</span>
-
-                    <strong id="valor-pir">
-                        Aguardando...
-                    </strong>
-
+                    <strong id="valor-pir">Aguardando...</strong>
                 </div>
-
-                <div class="device-time" id="hora-pir">
-                    Sem informação
-                </div>
-
+                <div class="device-time" id="hora-pir">Sem informação</div>
             </article>
-
 
             <!-- SERVO -->
             <article class="device-card servo-card" id="card-servo">
-
                 <div class="device-top">
-
-                    <div class="device-icon servo-icon">
-                        ↻
-                    </div>
-
+                    <div class="device-icon servo-icon">↻</div>
                     <div class="device-info">
                         <span class="device-type">ATUADOR</span>
-                        <h4>Servo Motor</h4>
+                        <h4>Servo motor</h4>
                     </div>
-
                     <span class="device-indicator"></span>
-
                 </div>
-
                 <div class="device-value">
-
                     <span class="value-label">POSIÇÃO</span>
-
-                    <strong id="valor-servo">
-                        Aguardando...
-                    </strong>
-
+                    <strong id="valor-servo">Aguardando...</strong>
                 </div>
-
-                <div class="device-time" id="hora-servo">
-                    Sem informação
-                </div>
-
+                <div class="device-time" id="hora-servo">Sem informação</div>
             </article>
 
         </section>
 
 
-        <!-- INFORMAÇÕES DO SISTEMA -->
+        <!-- CONTROLE DOS LEDs -->
+        <section class="system-panel">
 
+            <div class="system-title">
+                <div class="system-icon">💡</div>
+
+                <div>
+                    <span class="section-label">CONTROLE REMOTO</span>
+                    <h3>Iluminação</h3>
+                </div>
+            </div>
+
+            <div class="system-items">
+
+                <div class="system-item">
+                    <div>
+                        <small>LED AMARELO</small>
+                        <strong id="status-led1">Aguardando...</strong>
+                    </div>
+
+                    <button type="button" id="btn-led1-on"
+                        onclick="enviar('LED1_ON', this, 'mensagem-comando', 'Comando enviado. Aguardando confirmação do ESP32...')">
+                        Ligar
+                    </button>
+
+                    <button type="button" id="btn-led1-off"
+                        onclick="enviar('LED1_OFF', this, 'mensagem-comando', 'Comando enviado. Aguardando confirmação do ESP32...')">
+                        Desligar
+                    </button>
+                </div>
+
+                <div class="system-item">
+                    <div>
+                        <small>LED VERMELHO</small>
+                        <strong id="status-led2">Aguardando...</strong>
+                    </div>
+
+                    <button type="button" id="btn-led2-on"
+                        onclick="enviar('LED2_ON', this, 'mensagem-comando', 'Comando enviado. Aguardando confirmação do ESP32...')">
+                        Ligar
+                    </button>
+
+                    <button type="button" id="btn-led2-off"
+                        onclick="enviar('LED2_OFF', this, 'mensagem-comando', 'Comando enviado. Aguardando confirmação do ESP32...')">
+                        Desligar
+                    </button>
+                </div>
+
+            </div>
+
+            <p id="mensagem-comando" class="command-feedback" aria-live="polite"></p>
+
+        </section>
+
+
+        <!-- CONTROLE DO BUZZER -->
+        <section class="system-panel">
+
+            <div class="system-title">
+                <div class="system-icon">🔔</div>
+
+                <div>
+                    <span class="section-label">ALERTA SONORO</span>
+                    <h3>Buzzer</h3>
+                </div>
+            </div>
+
+            <div class="system-items">
+
+                <div class="system-item">
+                    <div>
+                        <small>BUZZER</small>
+                        <strong id="status-buzzer">Aguardando...</strong>
+                    </div>
+
+                    <button type="button" id="btn-buzzer-on"
+                        onclick="enviar('BUZZER_ON', this, 'mensagem-buzzer', 'Comando enviado. Aguardando confirmação do ESP32...')">
+                        Ligar
+                    </button>
+
+                    <button type="button" id="btn-buzzer-off"
+                        onclick="enviar('BUZZER_OFF', this, 'mensagem-buzzer', 'Comando enviado. Aguardando confirmação do ESP32...')">
+                        Desligar
+                    </button>
+                </div>
+
+            </div>
+
+            <p class="panel-note">
+                O controle manual é independente do alarme: se o alarme estiver disparando,
+                o buzzer continua tocando até o movimento cessar.
+            </p>
+
+            <p id="mensagem-buzzer" class="command-feedback" aria-live="polite"></p>
+
+        </section>
+
+
+        <!-- CONTROLE DO ALARME -->
+        <section class="system-panel alarm-panel">
+
+            <div class="alarm-heading">
+
+                <div class="system-title">
+                    <div class="system-icon alarm-icon">⌁</div>
+
+                    <div>
+                        <span class="section-label">SEGURANÇA</span>
+                        <h3>Alarme residencial</h3>
+                    </div>
+                </div>
+
+                <div class="alarm-state" id="alarme-estado" data-state="off">
+                    <span class="alarm-state-dot"></span>
+                    <strong id="status-alarme">Aguardando...</strong>
+                </div>
+
+            </div>
+
+            <p class="alarm-description">
+                Ative o sistema para monitorar movimentos detectados pelo sensor PIR.
+                O buzzer e os LEDs de alerta serão acionados quando houver movimento
+                enquanto o alarme estiver armado.
+            </p>
+
+            <div class="alarm-controls">
+
+                <button type="button" class="control-button alarm-on" id="btn-alarme-on"
+                    onclick="enviar('ALARME_ON', this, 'mensagem-alarme', 'Comando enviado. Aguardando confirmação do ESP32...')">
+                    <span class="button-symbol">●</span>
+                    <span>
+                        <strong>Ativar alarme</strong>
+                        <small>Armar monitoramento</small>
+                    </span>
+                </button>
+
+                <button type="button" class="control-button alarm-off" id="btn-alarme-off"
+                    onclick="enviar('ALARME_OFF', this, 'mensagem-alarme', 'Comando enviado. Aguardando confirmação do ESP32...')">
+                    <span class="button-symbol">■</span>
+                    <span>
+                        <strong>Desativar alarme</strong>
+                        <small>Desarmar monitoramento</small>
+                    </span>
+                </button>
+
+            </div>
+
+            <p id="mensagem-alarme" class="command-feedback" aria-live="polite"></p>
+
+        </section>
+
+
+        <!-- CONTROLE DO SERVO -->
+        <section class="system-panel">
+
+            <div class="system-title">
+                <div class="system-icon">↻</div>
+
+                <div>
+                    <span class="section-label">PORTA</span>
+                    <h3>Servo motor</h3>
+                </div>
+            </div>
+
+            <div class="system-items">
+
+                <div class="system-item">
+                    <div>
+                        <small>POSIÇÃO</small>
+                        <strong id="status-servo">Aguardando...</strong>
+                    </div>
+
+                    <button type="button" id="btn-servo-abrir"
+                        onclick="enviar('SERVO_ABRIR', this, 'mensagem-servo', 'Comando enviado. Abrindo...')">
+                        Abrir
+                    </button>
+
+                    <button type="button" id="btn-servo-fechar"
+                        onclick="enviar('SERVO_FECHAR', this, 'mensagem-servo', 'Comando enviado. Fechando...')">
+                        Fechar
+                    </button>
+                </div>
+
+            </div>
+
+            <p id="mensagem-servo" class="command-feedback" aria-live="polite"></p>
+
+        </section>
+
+
+        <!-- HISTÓRICO -->
+        <section class="system-panel history-panel">
+
+            <div class="history-heading">
+
+                <div class="system-title">
+                    <div class="system-icon">☰</div>
+
+                    <div>
+                        <span class="section-label">REGISTRO</span>
+                        <h3>Histórico de atividades</h3>
+                    </div>
+                </div>
+
+                <span class="history-count" id="history-count"></span>
+
+            </div>
+
+            <ul class="history-list" id="history-list">
+                <li class="history-empty">Carregando histórico...</li>
+            </ul>
+
+        </section>
+
+
+        <!-- SISTEMA -->
         <section class="system-panel">
 
             <div class="system-title">
 
-                <div class="system-icon">
-                    ⚡
-                </div>
+                <div class="system-icon">⚡</div>
 
                 <div>
                     <span class="section-label">INFRAESTRUTURA</span>
@@ -247,54 +420,38 @@
 
             </div>
 
-
             <div class="system-items">
 
                 <div class="system-item">
-
-                    <span class="system-dot online"></span>
-
+                    <span class="system-dot unknown" id="dot-esp32"></span>
                     <div>
                         <small>ESP32</small>
-                        <strong>Conectado</strong>
+                        <strong id="txt-esp32">Verificando</strong>
                     </div>
-
                 </div>
 
-
                 <div class="system-item">
-
-                    <span class="system-dot online"></span>
-
+                    <span class="system-dot unknown" id="dot-mqtt"></span>
                     <div>
                         <small>MQTT</small>
                         <strong>HiveMQ</strong>
                     </div>
-
                 </div>
 
-
                 <div class="system-item">
-
-                    <span class="system-dot online"></span>
-
+                    <span class="system-dot unknown" id="dot-db"></span>
                     <div>
                         <small>DATABASE</small>
                         <strong>Neon PostgreSQL</strong>
                     </div>
-
                 </div>
 
-
                 <div class="system-item">
-
-                    <span class="system-dot online"></span>
-
+                    <span class="system-dot unknown" id="dot-api"></span>
                     <div>
                         <small>API</small>
                         <strong>Flask</strong>
                     </div>
-
                 </div>
 
             </div>
@@ -317,212 +474,444 @@
 
     <script>
 
-        const dispositivos = [
-            "botao1",
-            "botao2",
-            "botao3",
-            "botao4",
-            "botao5",
-            "pir",
-            "servo",
-            "rele1",
-            "rele2",
-            "rele3",
-            "rele4"
-        ];
+        const $ = (id) => document.getElementById(id);
+
+        const CLASSES_ESTADO = ["state-on", "state-off", "state-alert", "state-warn"];
+
+        const ROTULOS_SERVO = {
+            aberto: "Aberto (180°)",
+            fechado: "Fechado (0°)",
+            abrindo: "Abrindo...",
+            fechando: "Fechando..."
+        };
 
 
-        function formatarValor(valor, dispositivo) {
+        /* ---------- utilitários ---------- */
 
-            if (valor === null || valor === undefined) {
-                return "Aguardando...";
-            }
+        function formatarHora(iso) {
 
-            const texto = String(valor).toLowerCase();
-
-            if (dispositivo === "pir") {
-
-                if (
-                    texto === "1" ||
-                    texto === "true" ||
-                    texto === "movimento" ||
-                    texto === "detectado"
-                ) {
-                    return "Movimento detectado";
-                }
-
-                if (
-                    texto === "0" ||
-                    texto === "false" ||
-                    texto === "sem movimento"
-                ) {
-                    return "Sem movimento";
-                }
-            }
-
-
-            if (dispositivo.startsWith("botao")) {
-
-                if (
-                    texto === "1" ||
-                    texto === "true" ||
-                    texto === "pressionado"
-                ) {
-                    return "Pressionado";
-                }
-
-                if (
-                    texto === "0" ||
-                    texto === "false" ||
-                    texto === "solto"
-                ) {
-                    return "Solto";
-                }
-            }
-
-
-            if (dispositivo === "servo") {
-
-                if (!isNaN(valor)) {
-                    return `${valor}°`;
-                }
-            }
-
-
-            return valor;
-        }
-
-
-        function formatarHora(data) {
-
-            if (!data) {
+            if (!iso) {
                 return "Sem informação";
             }
 
-            const dataObj = new Date(data);
+            const data = new Date(iso);
 
-            if (isNaN(dataObj)) {
-                return data;
+            if (isNaN(data)) {
+                return "Sem informação";
             }
 
-            return dataObj.toLocaleString(
-                "pt-BR",
-                {
-                    day: "2-digit",
-                    month: "2-digit",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    second: "2-digit"
-                }
-            );
+            return data.toLocaleString("pt-BR", {
+                day: "2-digit",
+                month: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit"
+            });
         }
 
 
-        function atualizarDispositivo(
-            dispositivo,
-            informacao
-        ) {
+        function definirTexto(id, texto, classe) {
 
-            const valorElemento =
-                document.getElementById(
-                    `valor-${dispositivo}`
-                );
+            const el = $(id);
 
-            const horaElemento =
-                document.getElementById(
-                    `hora-${dispositivo}`
-                );
-
-            const card =
-                document.getElementById(
-                    `card-${dispositivo}`
-                );
-
-
-            if (!valorElemento || !horaElemento) {
-                return;
+            if (!el) {
+                return false;
             }
 
+            const mudou = el.textContent !== texto;
 
-            if (!informacao) {
+            el.textContent = texto;
+            el.classList.remove(...CLASSES_ESTADO);
 
-                valorElemento.textContent =
-                    "Aguardando...";
-
-                horaElemento.textContent =
-                    "Sem informação";
-
-                return;
+            if (classe) {
+                el.classList.add(classe);
             }
 
-
-            valorElemento.textContent =
-                formatarValor(
-                    informacao.valor,
-                    dispositivo
-                );
+            return mudou;
+        }
 
 
-            horaElemento.textContent =
-                formatarHora(
-                    informacao.data_hora
-                );
+        function atualizarCard(nome, texto, classe, estadoCard, hora) {
 
+            const mudou = definirTexto(`valor-${nome}`, texto, classe);
 
-            if (card) {
+            $(`hora-${nome}`).textContent = formatarHora(hora);
 
+            const card = $(`card-${nome}`);
+
+            if (estadoCard) {
+                card.dataset.state = estadoCard;
+            } else {
+                delete card.dataset.state;
+            }
+
+            if (mudou) {
                 card.classList.add("updated");
-
-                setTimeout(() => {
-                    card.classList.remove("updated");
-                }, 700);
-
+                setTimeout(() => card.classList.remove("updated"), 700);
             }
         }
 
 
-        async function carregarDados() {
+        function marcarBotoes(idLigar, idDesligar, ligado) {
+
+            $(idLigar).classList.toggle("selected", ligado);
+            $(idDesligar).classList.toggle("selected", !ligado);
+        }
+
+
+        function definirPonto(id, estado) {
+            $(id).className = `system-dot ${estado}`;
+        }
+
+
+        /* ---------- conexão ---------- */
+
+        function mostrarConexao(esp32, servidorOk, bancoOk) {
+
+            const ponto = $("connectionDot");
+            const texto = $("connectionText");
+            const hero = $("heroStatus");
+
+            let estado;
+            let rotulo;
+            let heroTexto;
+
+            if (!servidorOk) {
+                estado = "offline";
+                rotulo = "Sem conexão com o servidor";
+                heroTexto = "Servidor indisponível";
+            } else if (!bancoOk) {
+                estado = "offline";
+                rotulo = "Erro no banco de dados";
+                heroTexto = "Banco indisponível";
+            } else if (esp32 === "online") {
+                estado = "online";
+                rotulo = "ESP32 conectado";
+                heroTexto = "ESP32 online";
+            } else if (esp32 === "offline") {
+                estado = "offline";
+                rotulo = "ESP32 desconectado";
+                heroTexto = "ESP32 offline";
+            } else {
+                estado = "unknown";
+                rotulo = "Aguardando ESP32";
+                heroTexto = "Aguardando ESP32";
+            }
+
+            ponto.className = `connection-dot ${estado}`;
+            texto.textContent = rotulo;
+
+            hero.dataset.state = estado;
+            $("heroStatusText").textContent = heroTexto;
+
+            definirPonto("dot-api", servidorOk ? "online" : "offline");
+            definirPonto("dot-db", servidorOk && bancoOk ? "online" : "offline");
+
+            if (!servidorOk) {
+                definirPonto("dot-esp32", "unknown");
+                definirPonto("dot-mqtt", "unknown");
+                $("txt-esp32").textContent = "Sem informação";
+                return;
+            }
+
+            if (esp32 === "online") {
+                definirPonto("dot-esp32", "online");
+                definirPonto("dot-mqtt", "online");
+                $("txt-esp32").textContent = "Conectado";
+            } else if (esp32 === "offline") {
+                definirPonto("dot-esp32", "offline");
+                definirPonto("dot-mqtt", "unknown");
+                $("txt-esp32").textContent = "Desconectado";
+            } else {
+                definirPonto("dot-esp32", "unknown");
+                definirPonto("dot-mqtt", "unknown");
+                $("txt-esp32").textContent = "Aguardando";
+            }
+        }
+
+
+        /* ---------- estado dos dispositivos ---------- */
+
+        function renderEstado(estado) {
+
+            const horas = estado.horas || {};
+
+            // LEDs
+            ["led1", "led2"].forEach((led) => {
+
+                const ligado = estado[led];
+                const texto = ligado ? "Ligado" : "Desligado";
+                const classe = ligado ? "state-on" : "state-off";
+
+                atualizarCard(led, texto, classe, ligado ? "on" : "", horas[led]);
+                definirTexto(`status-${led}`, texto, classe);
+                marcarBotoes(`btn-${led}-on`, `btn-${led}-off`, ligado);
+            });
+
+            // Buzzer
+            const buzzerTexto = estado.buzzer ? "Tocando" : "Desligado";
+            const buzzerClasse = estado.buzzer ? "state-alert" : "state-off";
+
+            atualizarCard("buzzer", buzzerTexto, buzzerClasse, estado.buzzer ? "alert" : "", horas.buzzer);
+            definirTexto("status-buzzer", buzzerTexto, buzzerClasse);
+            marcarBotoes("btn-buzzer-on", "btn-buzzer-off", estado.buzzer);
+
+            // Alarme
+            const alarmeTexto = estado.alarme ? "Ativado" : "Desativado";
+
+            atualizarCard(
+                "alarme",
+                alarmeTexto,
+                estado.alarme ? "state-on" : "state-off",
+                estado.alarme ? "on" : "",
+                horas.alarme
+            );
+
+            $("alarme-estado").dataset.state = estado.alarme ? "on" : "off";
+            $("status-alarme").textContent = alarmeTexto;
+            marcarBotoes("btn-alarme-on", "btn-alarme-off", estado.alarme);
+
+            // PIR
+            if (estado.pir_conhecido) {
+                atualizarCard(
+                    "pir",
+                    estado.pir ? "Movimento detectado" : "Sem movimento",
+                    estado.pir ? "state-warn" : "state-off",
+                    estado.pir ? "alert" : "",
+                    horas.pir
+                );
+            } else {
+                atualizarCard("pir", "Aguardando...", "", "", null);
+            }
+
+            // Servo
+            const servoTexto = ROTULOS_SERVO[estado.servo] || "Aguardando...";
+            const servoMovendo = estado.servo === "abrindo" || estado.servo === "fechando";
+
+            atualizarCard(
+                "servo",
+                servoTexto,
+                estado.servo === "aberto" ? "state-on" : "state-off",
+                estado.servo === "aberto" ? "on" : "",
+                horas.servo
+            );
+
+            definirTexto("status-servo", servoTexto, estado.servo === "aberto" ? "state-on" : "state-off");
+            marcarBotoes("btn-servo-abrir", "btn-servo-fechar", estado.servo === "aberto" || estado.servo === "abrindo");
+
+            $("btn-servo-abrir").disabled = servoMovendo;
+            $("btn-servo-fechar").disabled = servoMovendo;
+
+            mostrarConexao(estado.esp32, true, true);
+        }
+
+
+        let atualizando = false;
+
+        async function atualizar() {
+
+            if (atualizando) {
+                return;
+            }
+
+            atualizando = true;
+
             try {
-                const resposta = await fetch("/api/dispositivos");
+
+                const resposta = await fetch("/api/estado", { cache: "no-store" });
 
                 if (!resposta.ok) {
-                    throw new Error("Erro na API");
+                    // O servidor respondeu, mas não conseguiu consultar o banco
+                    mostrarConexao("desconhecido", true, false);
+                    return;
                 }
 
-                const dados = await resposta.json();
+                renderEstado(await resposta.json());
 
-                dispositivos.forEach(dispositivo => {
-                    atualizarDispositivo(dispositivo, dados[dispositivo]);
-                });
-
-                const agora = new Date();
-
-                document.getElementById("lastUpdate").textContent =
-                    agora.toLocaleTimeString("pt-BR");
-
-                document.getElementById("connectionText").textContent =
-                    "Sistema online";
+                $("lastUpdate").textContent = new Date().toLocaleTimeString("pt-BR");
 
             } catch (erro) {
-                console.error("Erro ao buscar dados:", erro);
 
-                document.getElementById("connectionText").textContent =
-                    "Erro de conexão";
+                console.error("Erro ao consultar estado:", erro);
+                mostrarConexao("desconhecido", false, false);
+
+            } finally {
+                atualizando = false;
             }
         }
 
-        carregarDados();
-        setInterval(carregarDados, 2000);
 
-        // Primeira consulta
-        carregarDados();
+        /* ---------- envio de comandos ---------- */
+
+        async function enviar(comando, botao, idMensagem, textoOk) {
+
+            const painel = botao.closest(".system-panel");
+            const botoes = painel.querySelectorAll("button");
+            const mensagem = $(idMensagem);
+
+            botoes.forEach((b) => (b.disabled = true));
+            mensagem.textContent = "Enviando comando para o ESP32...";
+
+            try {
+
+                const resposta = await fetch("/api/comando", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ comando })
+                });
+
+                const dados = await resposta.json().catch(() => ({}));
+
+                if (!resposta.ok) {
+                    throw new Error(dados.erro || "Não foi possível enviar o comando.");
+                }
+
+                mensagem.textContent = textoOk;
+
+                setTimeout(atualizar, 600);
+                setTimeout(atualizar, 1800);
+                setTimeout(carregarHistorico, 1500);
+
+            } catch (erro) {
+
+                console.error("Erro ao enviar comando:", erro);
+                mensagem.textContent = erro.message || "Falha de comunicação com o servidor.";
+
+            } finally {
+                botoes.forEach((b) => (b.disabled = false));
+            }
+
+            setTimeout(() => {
+                if (mensagem.textContent === textoOk) {
+                    mensagem.textContent = "";
+                }
+            }, 6000);
+        }
 
 
-        // Atualiza a cada 2 segundos
-        setInterval(
-            carregarDados,
-            2000
-        );
+        /* ---------- histórico ---------- */
+
+        function descreverEvento(registro) {
+
+            const valor = String(registro.valor).trim();
+
+            switch (registro.dispositivo) {
+
+                case "led1":
+                    return valor === "LIGADO"
+                        ? { icone: "💡", texto: "LED amarelo ligado", tipo: "on" }
+                        : { icone: "💡", texto: "LED amarelo desligado", tipo: "off" };
+
+                case "led2":
+                    return valor === "LIGADO"
+                        ? { icone: "💡", texto: "LED vermelho ligado", tipo: "on" }
+                        : { icone: "💡", texto: "LED vermelho desligado", tipo: "off" };
+
+                case "buzzer":
+                    return valor === "LIGADO"
+                        ? { icone: "🔔", texto: "Buzzer ligado", tipo: "alert" }
+                        : { icone: "🔔", texto: "Buzzer desligado", tipo: "off" };
+
+                case "alarme":
+                    return valor === "ATIVADO"
+                        ? { icone: "⌁", texto: "Alarme ativado", tipo: "on" }
+                        : { icone: "⌁", texto: "Alarme desativado", tipo: "off" };
+
+                case "pir":
+                    return valor === "MOVIMENTO_DETECTADO"
+                        ? { icone: "◉", texto: "Movimento detectado", tipo: "alert" }
+                        : { icone: "◉", texto: "Sem movimento", tipo: "off" };
+
+                case "servo":
+                    if (valor === "180_GRAUS") {
+                        return { icone: "↻", texto: "Porta aberta", tipo: "on" };
+                    }
+                    if (valor === "0_GRAUS") {
+                        return { icone: "↻", texto: "Porta fechada", tipo: "off" };
+                    }
+                    return null; // MOVENDO_* e PARADO_* são etapas intermediárias
+
+                case "status":
+                    return valor === "ESP32_ONLINE"
+                        ? { icone: "⚡", texto: "ESP32 conectado", tipo: "on" }
+                        : { icone: "⚡", texto: "ESP32 desconectado", tipo: "alert" };
+
+                default:
+                    return { icone: "•", texto: `${registro.dispositivo}: ${valor}`, tipo: "off" };
+            }
+        }
+
+
+        function renderHistorico(registros) {
+
+            const lista = $("history-list");
+            lista.textContent = "";
+
+            const eventos = registros
+                .map((registro) => ({ evento: descreverEvento(registro), hora: registro.data_hora }))
+                .filter((item) => item.evento !== null)
+                .slice(0, 20);
+
+            if (eventos.length === 0) {
+
+                const vazio = document.createElement("li");
+                vazio.className = "history-empty";
+                vazio.textContent = "Nenhuma atividade registrada ainda.";
+                lista.appendChild(vazio);
+
+                $("history-count").textContent = "";
+                return;
+            }
+
+            eventos.forEach(({ evento, hora }) => {
+
+                const item = document.createElement("li");
+                item.className = "history-item";
+                item.dataset.tipo = evento.tipo;
+
+                const icone = document.createElement("span");
+                icone.className = "history-icon";
+                icone.textContent = evento.icone;
+
+                const texto = document.createElement("strong");
+                texto.textContent = evento.texto;
+
+                const tempo = document.createElement("time");
+                tempo.textContent = formatarHora(hora);
+
+                item.append(icone, texto, tempo);
+                lista.appendChild(item);
+            });
+
+            $("history-count").textContent = `Últimas ${eventos.length} atividades`;
+        }
+
+
+        async function carregarHistorico() {
+
+            try {
+
+                const resposta = await fetch("/api/historico?limite=60", { cache: "no-store" });
+
+                if (!resposta.ok) {
+                    throw new Error("Erro ao consultar o histórico");
+                }
+
+                renderHistorico(await resposta.json());
+
+            } catch (erro) {
+                console.error("Erro ao carregar histórico:", erro);
+            }
+        }
+
+
+        /* ---------- início ---------- */
+
+        atualizar();
+        carregarHistorico();
+
+        setInterval(atualizar, 2000);
+        setInterval(carregarHistorico, 5000);
 
     </script>
 

@@ -1,111 +1,110 @@
+
 import os
 import json
+import time
 import threading
 from datetime import datetime
 
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from dotenv import load_dotenv
-
 import paho.mqtt.client as mqtt
 
 
 # ============================================================
-# CARREGAR .ENV
+# CONFIGURACAO
 # ============================================================
 
 load_dotenv()
 
-
-# ============================================================
-# CONFIGURAÇÕES DO POSTGRES / NEON
-# ============================================================
-
 DATABASE_URL = os.getenv("DATABASE_URL")
-
-if not DATABASE_URL:
-    raise RuntimeError(
-        "DATABASE_URL não foi encontrada no arquivo .env"
-    )
-
-
-# ============================================================
-# CONFIGURAÇÕES MQTT - HIVEMQ
-# ============================================================
 
 MQTT_BROKER = "broker.hivemq.com"
 MQTT_PORT = 1883
-
 MQTT_BASE_TOPIC = "projeto_iot/esp32"
+
+_ultimo_valor = {}
+_cache_carregado = False
+_cache_lock = threading.Lock()
 
 
 # ============================================================
-# CONEXÃO COM O NEON
+# CONEXAO COM NEON
 # ============================================================
 
 def conectar_banco():
-    """
-    Cria uma conexão com o PostgreSQL do Neon.
-    """
+    if not DATABASE_URL:
+        raise RuntimeError("DATABASE_URL nao encontrada no .env")
 
-    print("[BANCO] Tentando conectar ao Neon...", flush=True)
-
-    try:
-
-        conexao = psycopg2.connect(
-            DATABASE_URL,
-            connect_timeout=10
-        )
-
-        print(
-            "[BANCO] Conectado ao Neon!",
-            flush=True
-        )
-
-        return conexao
-
-    except Exception as erro:
-
-        print(
-            f"[BANCO] ERRO: {erro}",
-            flush=True
-        )
-
-        raise
+    return psycopg2.connect(
+        DATABASE_URL,
+        sslmode="require",
+        connect_timeout=20,
+        keepalives=1,
+        keepalives_idle=30,
+        keepalives_interval=10,
+        keepalives_count=3
+    )
 
 
-# ============================================================
-# VERIFICAR BANCO
-# ============================================================
+def executar(callback):
+    ultimo_erro = None
+
+    for tentativa in range(3):
+        conexao = None
+
+        try:
+            conexao = conectar_banco()
+
+            with conexao.cursor(cursor_factory=RealDictCursor) as cursor:
+                resultado = callback(cursor)
+
+            conexao.commit()
+            return resultado
+
+        except (psycopg2.OperationalError, psycopg2.InterfaceError) as erro:
+            ultimo_erro = erro
+
+            if conexao:
+                try:
+                    conexao.rollback()
+                except Exception:
+                    pass
+
+            print(
+                f"[BANCO] Falha na conexao. Tentativa {tentativa + 1}/3: {erro}",
+                flush=True
+            )
+
+            if tentativa < 2:
+                time.sleep(2)
+
+        except Exception:
+            if conexao:
+                try:
+                    conexao.rollback()
+                except Exception:
+                    pass
+            raise
+
+        finally:
+            if conexao:
+                try:
+                    conexao.close()
+                except Exception:
+                    pass
+
+    raise RuntimeError(f"Neon indisponivel: {ultimo_erro}")
+
 
 def verificar_banco():
-
     try:
-
-        conexao = conectar_banco()
-
-        cursor = conexao.cursor()
-
-        cursor.execute("""
-            SELECT 1;
-        """)
-
-        resultado = cursor.fetchone()
-
-        cursor.close()
-        conexao.close()
-
-        if resultado:
-            print("[BANCO] PostgreSQL conectado com sucesso!")
-
-            return True
+        executar(lambda cursor: cursor.execute("SELECT 1"))
+        print("[BANCO] Neon conectado!", flush=True)
+        return True
 
     except Exception as erro:
-
-        print(
-            f"[BANCO] Não foi possível conectar: {erro}"
-        )
-
+        print(f"[BANCO] Sem conexao: {erro}", flush=True)
         return False
 
 
@@ -115,107 +114,76 @@ def verificar_banco():
 
 def criar_tabela():
 
-    conexao = conectar_banco()
+    def criar(cursor):
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS dispositivos (
+                id SERIAL PRIMARY KEY,
+                dispositivo VARCHAR(50) NOT NULL,
+                valor TEXT,
+                data_hora TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+        """)
 
-    cursor = conexao.cursor()
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_dispositivos_dispositivo
+            ON dispositivos(dispositivo);
+        """)
 
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS dispositivos (
-            id SERIAL PRIMARY KEY,
-            dispositivo VARCHAR(50) NOT NULL,
-            valor TEXT,
-            data_hora TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-        );
-    """)
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_dispositivos_data_hora
+            ON dispositivos(data_hora DESC);
+        """)
 
-    cursor.execute("""
-        CREATE INDEX IF NOT EXISTS idx_dispositivos_dispositivo
-        ON dispositivos(dispositivo);
-    """)
-
-    cursor.execute("""
-        CREATE INDEX IF NOT EXISTS idx_dispositivos_data_hora
-        ON dispositivos(data_hora DESC);
-    """)
-
-    conexao.commit()
-
-    cursor.close()
-    conexao.close()
-
-    print("[BANCO] Tabela dispositivos pronta!")
+    executar(criar)
+    print("[BANCO] Tabela dispositivos pronta!", flush=True)
 
 
 # ============================================================
-# SALVAR DADO RECEBIDO PELO MQTT
+# SALVAR DADOS
 # ============================================================
 
 def salvar_dado(dispositivo, valor):
 
-    try:
-
-        conexao = conectar_banco()
-
-        cursor = conexao.cursor()
-
+    def inserir(cursor):
         cursor.execute("""
-            INSERT INTO dispositivos
-            (dispositivo, valor, data_hora)
+            INSERT INTO dispositivos (dispositivo, valor, data_hora)
             VALUES (%s, %s, %s);
-        """, (
-            dispositivo,
-            str(valor),
-            datetime.now()
-        ))
+        """, (dispositivo, str(valor), datetime.now()))
 
-        conexao.commit()
-
-        cursor.close()
-        conexao.close()
-
-        print(
-            f"[BANCO] Salvo: "
-            f"{dispositivo} = {valor}"
-        )
+    try:
+        executar(inserir)
+        print(f"[BANCO] Salvo: {dispositivo} = {valor}", flush=True)
+        return True
 
     except Exception as erro:
-
-        print(
-            f"[BANCO] Erro ao salvar dado: {erro}"
-        )
+        print(f"[BANCO] Erro ao salvar: {erro}", flush=True)
+        return False
 
 
 # ============================================================
-# BUSCAR ÚLTIMO VALOR DE CADA DISPOSITIVO
+# ULTIMOS DADOS
 # ============================================================
 
 def buscar_ultimos_dados():
 
-    conexao = conectar_banco()
+    def consultar(cursor):
+        cursor.execute("""
+            SELECT DISTINCT ON (dispositivo)
+                id,
+                dispositivo,
+                valor,
+                data_hora
+            FROM dispositivos
+            ORDER BY dispositivo, data_hora DESC, id DESC;
+        """)
 
-    cursor = conexao.cursor(
-        cursor_factory=RealDictCursor
-    )
+        return cursor.fetchall()
 
-    cursor.execute("""
-        SELECT DISTINCT ON (dispositivo)
-            id,
-            dispositivo,
-            valor,
-            data_hora
-        FROM dispositivos
-        ORDER BY dispositivo, data_hora DESC;
-    """)
-
-    resultados = cursor.fetchall()
-
-    cursor.close()
-    conexao.close()
+    resultados = executar(consultar)
 
     dados = {}
 
     for registro in resultados:
-
         dados[registro["dispositivo"]] = {
             "valor": registro["valor"],
             "data_hora": registro["data_hora"].isoformat()
@@ -225,36 +193,28 @@ def buscar_ultimos_dados():
 
 
 # ============================================================
-# BUSCAR HISTÓRICO
+# HISTORICO
 # ============================================================
 
 def buscar_historico(limite=50):
 
-    conexao = conectar_banco()
+    def consultar(cursor):
+        cursor.execute("""
+            SELECT
+                id,
+                dispositivo,
+                valor,
+                data_hora
+            FROM dispositivos
+            WHERE dispositivo <> 'comando'
+              AND dispositivo NOT LIKE 'botao%%'
+            ORDER BY data_hora DESC, id DESC
+            LIMIT %s;
+        """, (limite,))
 
-    cursor = conexao.cursor(
-        cursor_factory=RealDictCursor
-    )
+        return cursor.fetchall()
 
-    cursor.execute("""
-        SELECT
-            id,
-            dispositivo,
-            valor,
-            data_hora
-        FROM dispositivos
-        ORDER BY data_hora DESC
-        LIMIT %s;
-    """, (
-        limite,
-    ))
-
-    resultados = cursor.fetchall()
-
-    cursor.close()
-    conexao.close()
-
-    return resultados
+    return executar(consultar)
 
 
 # ============================================================
@@ -266,108 +226,115 @@ def interpretar_mensagem(topic, payload):
     prefixo = MQTT_BASE_TOPIC + "/"
 
     if topic.startswith(prefixo):
-
         dispositivo = topic[len(prefixo):]
-
     else:
-
         dispositivo = topic
 
     try:
-
         dados = json.loads(payload)
 
         if isinstance(dados, dict):
-
-            valor = json.dumps(
-                dados,
-                ensure_ascii=False
-            )
-
+            valor = json.dumps(dados, ensure_ascii=False)
         else:
-
             valor = dados
 
     except (json.JSONDecodeError, TypeError):
-
         valor = payload
 
     return dispositivo, valor
 
 
 # ============================================================
-# QUANDO CONECTAR AO HIVEMQ
+# CACHE
 # ============================================================
 
-def on_connect(
-    client,
-    userdata,
-    flags,
-    reason_code,
-    properties=None
-):
+def carregar_cache():
 
-    if reason_code == 0:
+    global _cache_carregado
 
-        print("[MQTT] Conectado ao HiveMQ!")
+    with _cache_lock:
+        if _cache_carregado:
+            return
 
-        client.subscribe(
-            f"{MQTT_BASE_TOPIC}/#"
-        )
+        try:
+            dados = buscar_ultimos_dados()
+
+            for nome, info in dados.items():
+                _ultimo_valor[nome] = str(info["valor"])
+
+            print("[MQTT] Cache carregado!", flush=True)
+
+        except Exception as erro:
+            print(f"[MQTT] Cache indisponivel: {erro}", flush=True)
+
+        finally:
+            _cache_carregado = True
+
+
+# ============================================================
+# CONEXAO MQTT
+# ============================================================
+
+def on_connect(client, userdata, flags, reason_code, properties=None):
+
+    if not reason_code.is_failure:
+        print("[MQTT] Conectado ao HiveMQ!", flush=True)
+
+        client.subscribe(f"{MQTT_BASE_TOPIC}/#")
 
         print(
-            f"[MQTT] Escutando: "
-            f"{MQTT_BASE_TOPIC}/#"
+            f"[MQTT] Escutando {MQTT_BASE_TOPIC}/#",
+            flush=True
         )
 
     else:
+        print(f"[MQTT] Falha na conexao: {reason_code}", flush=True)
 
-        print(
-            f"[MQTT] Erro ao conectar: "
-            f"{reason_code}"
-        )
+
+def on_disconnect(client, userdata, disconnect_flags, reason_code, properties=None):
+    print(f"[MQTT] Desconectado: {reason_code}", flush=True)
 
 
 # ============================================================
-# QUANDO RECEBER UMA MENSAGEM
+# RECEBER MENSAGENS
 # ============================================================
 
 def on_message(client, userdata, message):
 
     try:
-
         topic = message.topic
+        payload = message.payload.decode("utf-8")
 
-        payload = message.payload.decode(
-            "utf-8"
+        dispositivo, valor = interpretar_mensagem(topic, payload)
+
+        if dispositivo == "comando":
+            return
+
+        if dispositivo.startswith("botao"):
+            return
+
+        carregar_cache()
+
+        valor_texto = str(valor)
+
+        evento_status = (
+            dispositivo == "status"
+            and not message.retain
         )
 
-        dispositivo, valor = interpretar_mensagem(
-            topic,
-            payload
-        )
+        if (
+            not evento_status
+            and _ultimo_valor.get(dispositivo) == valor_texto
+        ):
+            return
 
-        print()
-        print("================================")
-        print("       NOVA MENSAGEM MQTT")
-        print("================================")
-        print(f"Tópico:      {topic}")
-        print(f"Dispositivo: {dispositivo}")
-        print(f"Valor:       {valor}")
-        print("================================")
-        print()
+        print(f"[MQTT] {dispositivo} = {valor_texto}", flush=True)
 
-        salvar_dado(
-            dispositivo,
-            valor
-        )
+        if salvar_dado(dispositivo, valor_texto):
+            _ultimo_valor[dispositivo] = valor_texto
 
     except Exception as erro:
-
-        print(
-            f"[MQTT] Erro ao processar mensagem: "
-            f"{erro}"
-        )
+        print(f"[MQTT] Erro ao processar mensagem: {erro}", flush=True)
 
 
 # ============================================================
@@ -377,71 +344,50 @@ def on_message(client, userdata, message):
 def iniciar_mqtt():
 
     client = mqtt.Client(
-        mqtt.CallbackAPIVersion.VERSION2
+        callback_api_version=mqtt.CallbackAPIVersion.VERSION2
     )
 
     client.on_connect = on_connect
+    client.on_disconnect = on_disconnect
     client.on_message = on_message
 
-    print("[MQTT] Conectando ao HiveMQ...")
+    client.reconnect_delay_set(
+        min_delay=1,
+        max_delay=30
+    )
 
-    client.connect(
+    print("[MQTT] Iniciando HiveMQ...", flush=True)
+
+    client.connect_async(
         MQTT_BROKER,
         MQTT_PORT,
         60
     )
 
-    thread = threading.Thread(
-        target=client.loop_forever,
-        daemon=True
-    )
+    client.loop_start()
 
-    thread.start()
-
-    print("[MQTT] Cliente MQTT iniciado!")
+    print("[MQTT] Cliente iniciado!", flush=True)
 
     return client
 
 
-# ============================================================
-# EXECUTAR DB.PY DIRETAMENTE
-# ============================================================
-
 if __name__ == "__main__":
 
-    print()
-    print("========================================")
-    print("      CASA INTELIGENTE - DB + MQTT")
-    print("========================================")
-    print()
+    print("CASA INTELIGENTE - BANCO E MQTT")
 
-    # Testa conexão com Neon
     if not verificar_banco():
+        print("[AVISO] Banco indisponivel.")
 
-        print(
-            "[ERRO] Não foi possível conectar "
-            "ao banco."
-        )
+    else:
+        criar_tabela()
 
-        exit(1)
-
-    # Cria tabela
-    criar_tabela()
-
-    # Inicia MQTT
-    iniciar_mqtt()
-
-    print()
-    print("Sistema iniciado.")
-    print("Aguardando dados do ESP32...")
-    print()
+    cliente = iniciar_mqtt()
 
     try:
-
         while True:
-            pass
+            time.sleep(1)
 
     except KeyboardInterrupt:
-
-        print()
-        print("Sistema encerrado.")
+        cliente.loop_stop()
+        cliente.disconnect()
+        print("[MQTT] Encerrado.")
